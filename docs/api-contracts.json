@@ -1,0 +1,320 @@
+[
+  {
+    "endpoint": "/api/health",
+    "method": "GET",
+    "description": "Returns backend health information. Not required by the landing page, but remains available for app health checks.",
+    "authentication": false,
+    "request": {
+      "headers": {},
+      "params": {},
+      "query": {},
+      "body": {}
+    },
+    "response": {
+      "success": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "data": {
+            "status": "ok",
+            "uptime": 123.45,
+            "version": "1.0.0",
+            "timestamp": "2026-05-17T00:00:00.000Z"
+          }
+        }
+      },
+      "errors": []
+    }
+  },
+  {
+    "endpoint": "/api/auth/login",
+    "method": "POST",
+    "description": "Authenticates a user with email and password. Must accept the hardcoded admin credentials and return a JWT plus user profile. If the admin user does not exist, the backend may create or upsert it before validating the login.",
+    "authentication": false,
+    "request": {
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "params": {},
+      "query": {},
+      "body": {
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "admin@freshcart.com",
+            "description": "Email address for the admin or existing user account."
+          },
+          "password": {
+            "type": "string",
+            "example": "admin123",
+            "description": "Password for the admin or existing user account."
+          }
+        }
+      }
+    },
+    "response": {
+      "success": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "data": {
+            "token": "jwt-token-string",
+            "user": {
+              "id": "user_admin",
+              "name": "FreshCart Admin",
+              "email": "admin@freshcart.com",
+              "role": "admin"
+            }
+          }
+        }
+      },
+      "errors": [
+        {
+          "status": 400,
+          "code": "VALIDATION_ERROR",
+          "message": "Email and password are required"
+        },
+        {
+          "status": 401,
+          "code": "UNAUTHORIZED",
+          "message": "Invalid email or password"
+        },
+        {
+          "status": 500,
+          "code": "INTERNAL_SERVER_ERROR",
+          "message": "Unexpected authentication error"
+        }
+      ]
+    }
+  },
+  {
+    "endpoint": "/api/products",
+    "method": "GET",
+    "description": "Returns fruit and vegetable product listings used by the protected products page. No changes are required for the static landing page.",
+    "authentication": false,
+    "request": {
+      "headers": {},
+      "params": {},
+      "query": {},
+      "body": {}
+    },
+    "response": {
+      "success": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "data": [
+            {
+              "id": "prod_bananas",
+              "name": "Organic Bananas",
+              "category": "Fruit",
+              "price": "$2.49/lb",
+              "stock": 84,
+              "status": "active",
+              "accent": "#facc15"
+            }
+          ]
+        }
+      },
+      "errors": []
+    }
+  },
+  {
+    "endpoint": "/api/products",
+    "method": "POST",
+    "description": "Creates a new produce product listing. Existing endpoint remains unchanged by the landing page request.",
+    "authentication": true,
+    "request": {
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer <token>"
+      },
+      "params": {},
+      "query": {},
+      "body": {
+        "name": {
+          "type": "string",
+          "required": true,
+          "example": "Organic Mangoes"
+        },
+        "category": {
+          "type": "string",
+          "required": true,
+          "example": "Fruit"
+        },
+        "price": {
+          "type": "number",
+          "required": true,
+          "example": 3.99
+        },
+        "unit": {
+          "type": "string",
+          "required": true,
+          "example": "lb"
+        },
+        "stock": {
+          "type": "number",
+          "required": false,
+          "example": 25
+        },
+        "status": {
+          "type": "string",
+          "required": false,
+          "example": "active"
+        },
+        "accent": {
+          "type": "string",
+          "required": false,
+          "example": "#f97316"
+        }
+      }
+    },
+    "response": {
+      "success": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "data": {
+            "id": "generated-product-id",
+            "name": "Organic Mangoes",
+            "category": "Fruit",
+            "price": 3.99,
+            "unit": "lb",
+            "stock": 25,
+            "status": "active",
+            "accent": "#f97316"
+          }
+        }
+      },
+      "errors": [
+        {
+          "status": 400,
+          "code": "VALIDATION_ERROR",
+          "message": "Name, category, price, and unit are required"
+        }
+      ]
+    }
+  },
+  {
+    "endpoint": "/api/cart",
+    "method": "GET",
+    "description": "Returns the demo user's cart contents for the protected cart page. No changes are required for the static landing page.",
+    "authentication": true,
+    "request": {
+      "headers": {
+        "Authorization": "Bearer <token>"
+      },
+      "params": {},
+      "query": {},
+      "body": {}
+    },
+    "response": {
+      "success": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "data": {
+            "items": [
+              {
+                "id": "cart_demo_strawberries",
+                "productId": "prod_strawberries",
+                "name": "Strawberries",
+                "qty": 3,
+                "price": 5.49,
+                "unit": "box"
+              }
+            ]
+          }
+        }
+      },
+      "errors": []
+    }
+  },
+  {
+    "endpoint": "/api/cart/items",
+    "method": "POST",
+    "description": "Adds or updates a cart item quantity. Existing endpoint remains unchanged by the landing page request.",
+    "authentication": true,
+    "request": {
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer <token>"
+      },
+      "params": {},
+      "query": {},
+      "body": {
+        "productId": {
+          "type": "string",
+          "required": true,
+          "example": "prod_avocados"
+        },
+        "quantity": {
+          "type": "number",
+          "required": true,
+          "example": 6
+        }
+      }
+    },
+    "response": {
+      "success": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "data": {
+            "id": "cart-item-id",
+            "productId": "prod_avocados",
+            "name": "Avocados",
+            "qty": 6,
+            "price": 1.75,
+            "unit": "each"
+          }
+        }
+      },
+      "errors": [
+        {
+          "status": 400,
+          "code": "VALIDATION_ERROR",
+          "message": "Product and quantity are required"
+        }
+      ]
+    }
+  },
+  {
+    "endpoint": "/api/orders",
+    "method": "GET",
+    "description": "Returns order workflow data for the protected orders page. No changes are required for the static landing page.",
+    "authentication": true,
+    "request": {
+      "headers": {
+        "Authorization": "Bearer <token>"
+      },
+      "params": {},
+      "query": {},
+      "body": {}
+    },
+    "response": {
+      "success": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "data": [
+            {
+              "id": "ORD-1042",
+              "customer": "Demo Admin",
+              "total": "$48.20",
+              "status": "packing",
+              "date": "2026-05-17"
+            }
+          ]
+        }
+      },
+      "errors": []
+    }
+  }
+]
